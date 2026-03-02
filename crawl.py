@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 
 def normalize_url(url):
@@ -25,3 +25,45 @@ def get_first_paragraph_from_html(html):
         first_p = soup.find("p")
 
     return first_p.get_text(strip=True) if first_p else ""
+
+
+def get_urls_from_html(html, base_url):
+    urls = []
+    soup = BeautifulSoup(html, "html.parser")
+    anchors = soup.find_all("a")
+
+    for anchor in anchors:
+        if href := anchor.get("href"):
+            try:
+                absolute_url = urljoin(base_url, href)
+                urls.append(absolute_url)
+            except Exception as e:
+                print(f"{str(e)}: {href}")
+
+    return urls
+
+
+def get_images_from_html(html, base_url):
+    image_urls = []
+    soup = BeautifulSoup(html, "html.parser")
+    images = soup.find_all("img")
+
+    for img in images:
+        if src := img.get("src"):
+            try:
+                absolute_url = urljoin(base_url, src)
+                image_urls.append(absolute_url)
+            except Exception as e:
+                print(f"{str(e)}: {src}")
+
+    return image_urls
+
+
+def extract_page_data(html, page_url):
+    return {
+        "url": page_url,
+        "heading": get_heading_from_html(html),
+        "first_paragraph": get_first_paragraph_from_html(html),
+        "outgoing_links": get_urls_from_html(html, page_url),
+        "image_urls": get_images_from_html(html, page_url),
+    }
