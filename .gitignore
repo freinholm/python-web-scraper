@@ -11,3 +11,6 @@ wheels/
 
 # MacOS shenanigans
 .DS_store
+
+# Generated reports
+report.json
